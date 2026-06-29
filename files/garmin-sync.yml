@@ -1,0 +1,28 @@
+name: Garmin sync
+
+on:
+  schedule:
+    # Every day at 12:00 UTC (adjust to your timezone if you like)
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install deps
+        run: pip install -r files/requirements.txt
+
+      - name: Sync Garmin
+        env:
+          GARMIN_TOKEN_B64: ${{ secrets.GARMIN_TOKEN_B64 }}
+          GARMIN_INGEST_URL: ${{ secrets.GARMIN_INGEST_URL }}
+          GARMIN_INGEST_SECRET: ${{ secrets.SESSION_LOG_SECRET }}
+        run: python files/sync_garmin.py --days 3 --sink supabase
